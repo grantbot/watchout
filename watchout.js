@@ -4,7 +4,7 @@
 var gameOptions = {
   height: 500,
   width: 900,
-  nEnemies: 1,
+  nEnemies: 15,
   padding: 5
 }
 
@@ -18,13 +18,31 @@ gameOptions.maxY = gameOptions.height - gameOptions.padding;
 
 var gameStats = {
   score: 0,
-  bestScore: 0
+  highScore: 0
 }
 
 axes = {
   x: d3.scale.linear().domain([0,100]).range([0,gameOptions.width]),
   y: d3.scale.linear().domain([0,100]).range([0,gameOptions.height])
 }
+
+var updateScore = function(){
+  gameStats.score ++;
+  d3.select(".current")
+    .select('span')
+    .text(gameStats.score.toString());
+}
+
+var updateBestScore = function(){
+  gameStats.highScore = Math.max(gameStats.highScore, gameStats.score);
+  gameStats.score = 0;
+
+  d3.select(".high")
+    .select('span')
+    .text(gameStats.highScore.toString());
+}
+
+
 
 var gameBoard = d3.select('.container').append('svg:svg')
                 .attr('width', gameOptions.width)
@@ -126,7 +144,7 @@ var checkCollision = function (enemy, collidedCallback){
 };
 
 var onCollision = function(){
-  console.log("IMPACT!!!");
+  updateBestScore();
 }
 
 var tweenWithCollisionDetection = function(endData){
@@ -163,10 +181,20 @@ var player = new Player;
 player.playerRender();
 
 var play = function() {
-  var newEnemies = createEnemies();
-  render(newEnemies);
+
+  var refresh = function() {
+    var newEnemies = createEnemies();
+    render(newEnemies);
+  }
+
+  refresh();
+  setInterval(refresh, 2000);
+
+  setInterval(updateScore, 100);
+
+
 };
 
+play();
 
 
-setInterval(play, 2000);
