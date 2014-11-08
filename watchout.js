@@ -4,7 +4,7 @@
 var gameOptions = {
   height: 500,
   width: 900,
-  nEnemies: 10,
+  nEnemies: 1,
   padding: 5
 }
 
@@ -111,9 +111,23 @@ var render = function(enemy_data){
       .duration(2000)
       .attr('cx', function(enemy) { return axes.x(enemy.x)})
       .attr('cy', function(enemy) { return axes.y(enemy.y)})
-
-
+      .tween('custom', tweenWithCollisionDetection);
 };
+
+var checkCollision = function (enemy, collidedCallback){
+  radiusSum = enemy.r + player.r;
+  xDiff = enemy.x - player.el.attr('cx');
+  yDiff = enemy.y - player.el.attr('cy');
+  var separation = Math.sqrt( Math.pow(xDiff, 2) + Math.pow(yDiff, 2) );
+
+  if(separation < radiusSum){
+    collidedCallback(player, enemy);
+  }
+};
+
+var onCollision = function(){
+  console.log("IMPACT!!!");
+}
 
 var tweenWithCollisionDetection = function(endData){
 
@@ -121,13 +135,28 @@ var tweenWithCollisionDetection = function(endData){
 
   var startPos = {
     x: parseFloat(enemy.attr('cx')),
-    y: parseFloat(enemy.attr('cy'))
+    y: parseFloat(enemy.attr('cy')),
+    r: parseFloat(enemy.attr('r'))
   };
 
   var endPos = {
       x: axes.x(endData.x),
       y: axes.y(endData.y)
     };
+
+  return function(t){
+    var instantX = startPos.x + ((endPos.x - startPos.x) * t);
+    var instantY = startPos.y + ((endPos.y - startPos.y) * t);
+
+    var movingEnemy = {
+      x: instantX,
+      y: instantY,
+      r: startPos.r
+    };
+
+    checkCollision(movingEnemy, onCollision);
+  }
+
 };
 
 var player = new Player;
