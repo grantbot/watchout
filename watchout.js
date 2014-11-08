@@ -1,12 +1,20 @@
 // start slingin' some d3 here.
 
+//Set game options
 var gameOptions = {
-  height: 450,
-  width: 700,
+  height: 500,
+  width: 900,
   nEnemies: 10,
   padding: 5
-
 }
+
+//Set some other game options off of those ones
+//(Couldn't assign them within the object literal)
+gameOptions.minX = gameOptions.padding;
+gameOptions.maxX = gameOptions.width - gameOptions.padding;
+gameOptions.minY = gameOptions.padding;
+gameOptions.maxY = gameOptions.height - gameOptions.padding;
+
 
 var gameStats = {
   score: 0,
@@ -21,6 +29,7 @@ axes = {
 var gameBoard = d3.select('.container').append('svg:svg')
                 .attr('width', gameOptions.width)
                 .attr('height', gameOptions.height)
+
 
 var createEnemies = function(){
   var enemies = [];
@@ -37,6 +46,49 @@ var createEnemies = function(){
   });
 };
 
+
+var Player = function(){
+    this.fill = '#ff6600';
+    this.x = 0;
+    this.y = 0;
+    this.r = 10;
+};
+
+Player.prototype.playerRender = function(){
+   this.el = gameBoard.append('svg:circle')
+              .attr('class', 'player')
+              .attr('fill', this.fill)
+              .attr('cx', gameOptions.width * 0.5)
+              .attr('cy', gameOptions.height * 0.5)
+              .attr('r', this.r)
+
+
+var dragMove = function(){
+  var newX = this.cx.baseVal.value + d3.event.dx;
+  var newY = this.cy.baseVal.value + d3.event.dy;
+
+  if(newX <= gameOptions.minX){
+    newX = gameOptions.minX;
+  } else if (newX >= gameOptions.maxX){
+    newX = gameOptions.maxX;
+  }
+
+  if(newY <= gameOptions.minY){
+    newY = gameOptions.minY;
+  } else if (newY >= gameOptions.maxY){
+    newY = gameOptions.maxY;
+  }
+
+  this.setAttributeNS(null, 'cx', newX);
+  this.setAttributeNS(null, 'cy', newY);
+};
+
+  var drag = d3.behavior.drag().on('drag', dragMove);
+
+  return this.el.call(drag);
+};
+
+
 var render = function(enemy_data){
 
   var enemies = gameBoard.selectAll('circle.enemy')
@@ -49,7 +101,7 @@ var render = function(enemy_data){
         .attr('class', 'enemy')
         .attr('cx', function(enemy) { return axes.x(enemy.x)})
         .attr('cy', function(enemy) { return axes.y(enemy.y)})
-        .attr('r', 5);
+        .attr('r', 10);
 
   enemies.exit()
       .remove();
@@ -78,9 +130,14 @@ var tweenWithCollisionDetection = function(endData){
     };
 };
 
+var player = new Player;
+player.playerRender();
+
 var play = function() {
   var newEnemies = createEnemies();
   render(newEnemies);
-}
+};
+
+
 
 setInterval(play, 2000);

@@ -2,8 +2,15 @@ body {
   background-color: gray;
   }
 .container {
+  position: relative;
   background: white;
+  margin: 0 auto;
   /* your beautiful css styling goes here! */
+}
+
+svg {
+  display: block;
+  margin: 0 auto;
 }
 
 /* Note: an asteroid image is included in this repo.
